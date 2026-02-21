@@ -51,6 +51,7 @@ class Menu(QMenuBar):
         self.setup()
 
     def setup(self) -> None:
+        """Initial menu setup"""
         self.addAction(self.ui.menu_tools.menuAction())
         self.addAction(self.ui.menu_preferences.menuAction())
         self.addAction(self.ui.menu_help.menuAction())

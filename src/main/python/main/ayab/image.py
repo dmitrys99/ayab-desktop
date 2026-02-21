@@ -79,6 +79,7 @@ class AyabImage(SignalSender):
             self.__load(str(selected_file))
 
     def load(self, filename: str) -> None:
+        """Public wrapper for image loading functionality"""
         self.__load(filename)
 
     def __load(self, filename: str) -> None:
