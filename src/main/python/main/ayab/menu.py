@@ -56,22 +56,25 @@ class Menu(QMenuBar):
         self.addAction(self.ui.menu_preferences.menuAction())
         self.addAction(self.ui.menu_help.menuAction())
 
+        # Wire recent file actions once (guard prevents re-wiring on repopulate())
+        if not hasattr(self, "recents"):
+            self.recents = [
+                getattr(self.ui, "action_recent_" + str(x))
+                for x in range(self.parent().prefs.MAX_RECENT_COUNT)
+            ]
+            for action in self.recents:
+                action.triggered.connect(self.load_recent)
+
         # Set up recent files menus
         self.showRecents()
 
     # Show recent files menus
     def showRecents(self) -> None:
         """Update recent files menu"""
-        self.recents = []
-
-        # Get recents actions from UI
-        for x in range(self.parent().prefs.MAX_RECENT_COUNT):
-            self.recents.append(self.ui.__dict__["action_recent_" + str(x)])
 
         # Set recents invisible
-        for x in range(self.parent().prefs.MAX_RECENT_COUNT):
-            self.recents[x].setVisible(False)
-            self.recents[x].triggered.connect(self.load_recent)
+        for action in self.recents:
+            action.setVisible(False)
 
         # Set recents menu invisible as well
         self.ui.menu_recent_files.menuAction().setVisible(False)
