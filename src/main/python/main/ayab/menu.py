@@ -93,7 +93,7 @@ class Menu(QMenuBar):
 
     # Function is a recent menu click handler
     # Load image from file
-    def load_recent(self, e) -> None:
+    def load_recent(self, _) -> None:
         """Recent menu action click handler"""
         filename = self.sender().text()
         self.parent().scene.ayabimage.load(filename)
