@@ -28,7 +28,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .ayab import GuiMain
 
-
 class Menu(QMenuBar):
     """
     Menu bar object and associated methods.
@@ -55,6 +54,45 @@ class Menu(QMenuBar):
         self.addAction(self.ui.menu_tools.menuAction())
         self.addAction(self.ui.menu_preferences.menuAction())
         self.addAction(self.ui.menu_help.menuAction())
+
+        # Set up recent files menus
+        self.showRecents()
+
+    # Show recent files menus
+    def showRecents(self) -> None:
+        """Update recent files menu"""
+        self.recents = []
+
+        # Get recents actions from UI
+        for x in range(self.parent().prefs.MAX_RECENT_COUNT):
+            self.recents.append(self.ui.__dict__["action_recent_" + str(x)])
+
+        # Set recents invisible
+        for x in range(self.parent().prefs.MAX_RECENT_COUNT):
+            self.recents[x].setVisible(False)
+            self.recents[x].triggered.connect(self.load_recent)
+
+        # Set recents menu invisible as well
+        self.ui.menu_recent_files.menuAction().setVisible(False)
+
+        # Get file names from recents list
+        # and make items visible if there are files available.
+        i = 0
+        while i < self.parent().prefs.MAX_RECENT_COUNT and i < len(self.parent().prefs.recentFiles):
+            self.recents[i].setText(self.parent().prefs.recentFiles[i])
+            self.recents[i].setVisible(True)
+            i += 1
+
+        # Set visible toplevel menu item if there are recent files available
+        if i > 0:
+            self.ui.menu_recent_files.menuAction().setVisible(True)
+
+    # Function is a recent menu click handler
+    # Load image from file
+    def load_recent(self, e) -> None:
+        """Recent menu action click handler"""
+        filename = self.sender().text()
+        self.parent().scene.ayabimage.load(filename)
 
     def depopulate(self) -> None:
         try:

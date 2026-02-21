@@ -56,11 +56,12 @@ from typing import (
     overload,
 )
 
+import os
+
 if TYPE_CHECKING:
     from .ayab import GuiMain
 
 T = TypeVar("T")
-
 
 def str2bool(qvariant: str | bool) -> bool:
     if type(qvariant) is str:
@@ -129,6 +130,12 @@ class Preferences(SignalSender):
         "lower_display_stitch_width": int,
     }
 
+    """How many recent files can be added to menu."""
+    MAX_RECENT_COUNT = 5
+
+    """Recent files list"""
+    recentFiles = []
+
     def __init__(self, parent: GuiMain):
         super().__init__(parent.signal_receiver)
         self.parent = parent
@@ -138,8 +145,26 @@ class Preferences(SignalSender):
         self.refresh()
 
     def refresh(self) -> None:
+        """Sync variables and recent files list with saved configuration"""
         for var in self.variables.keys():
             self.settings.setValue(var, self.value(cast(PreferencesDictKeys, var)))
+
+        # Read recents from configuration
+        # and check if files are still available
+        for i in range(self.MAX_RECENT_COUNT):
+            filename = self.settings.value("Recent/" + str(i))
+            if filename != None and os.path.exists(filename) and not (filename in self.recentFiles):
+                self.recentFiles.append(filename)
+
+        # Remove Recent section since it is possible
+        # there are no available files
+        self.settings.remove("Recent")
+
+        # Save recents back to configuration
+        i = 0
+        while i < self.MAX_RECENT_COUNT and i < len(self.recentFiles):
+            self.settings.setValue("Recent/" + str(i), self.recentFiles[i])
+            i += 1
 
     def reset(self) -> None:
         """Reset all the fields except language"""
@@ -148,6 +173,17 @@ class Preferences(SignalSender):
                 self.settings.setValue(
                     var, self.default_value(cast(PreferencesDictKeys, var))
                 )
+
+        # Reset recent files list and remove section
+        self.recentFiles = []
+        self.settings.remove("Recent")
+
+    # Add file to recents, used during usual open from file.
+    def addRecent(self, fileName) -> None:
+        """Add fileName to recent list if it is not already there"""
+        if not fileName in self.recentFiles:
+            self.recentFiles.insert(0, fileName)
+            self.refresh()
 
     @overload
     def value(self, var: PreferencesDictBoolKeys) -> bool: ...
