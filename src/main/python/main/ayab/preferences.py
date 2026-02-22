@@ -141,7 +141,7 @@ class Preferences(SignalSender):
         self.settings.setFallbacksEnabled(False)
 
         """Recent files list"""
-        self.recentFiles = []
+        self.recentFiles: list[str] = []
         self.refresh()
 
     def refresh(self) -> None:
@@ -153,8 +153,8 @@ class Preferences(SignalSender):
         # and check if files are still available
         for i in range(self.MAX_RECENT_COUNT):
             filename = self.settings.value("Recent/" + str(i))
-            if filename is not None and os.path.exists(filename) and (filename not in self.recentFiles):
-                self.recentFiles.append(filename)
+            if filename is not None and os.path.exists(str(filename)) and (filename not in self.recentFiles):
+                self.recentFiles.append(str(filename))
 
         # Remove Recent section since it is possible
         # there are no available files
@@ -179,10 +179,10 @@ class Preferences(SignalSender):
         self.settings.remove("Recent")
 
     # Add file to recents, used during usual open from file.
-    def addRecent(self, fileName) -> None:
+    def addRecent(self, filename: str) -> None:
         """Add fileName to recent list if it is not already there"""
-        if not fileName in self.recentFiles:
-            self.recentFiles.insert(0, fileName)
+        if filename not in self.recentFiles:
+            self.recentFiles.insert(0, filename)
             self.refresh()
 
     @overload
@@ -258,6 +258,7 @@ class PrefsDialog(QDialog):
         self.__ui = Ui_Prefs()
         self.__ui.setupUi(self)
         self.__form = QFormLayout(self.__ui.prefs_group)
+        self.__parent = parent
 
         # add form items
         self.__widget = {}
@@ -300,7 +301,7 @@ class PrefsDialog(QDialog):
         self.__refresh_form()
 
         # Update recents menu after reset
-        self.parent().menu.showRecents()
+        self.__parent.menu.showRecents()
 
 
 class PrefsBoolWidget(QCheckBox):

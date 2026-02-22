@@ -21,9 +21,10 @@
 from __future__ import annotations
 from PySide6.QtCore import QOperatingSystemVersion
 from PySide6.QtWidgets import QMenuBar
+from PySide6.QtGui import QAction
 
 from .menu_gui import Ui_MenuBar
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from .ayab import GuiMain
@@ -38,7 +39,7 @@ class Menu(QMenuBar):
 
     def __init__(self, parent: GuiMain):
         super().__init__(parent)
-
+        self.__parent = parent
         # Use native menubar on macOS, not elsewhere (i.e. Linux)
         if (
             QOperatingSystemVersion.currentType()
@@ -60,10 +61,10 @@ class Menu(QMenuBar):
         if not hasattr(self, "recents"):
             self.recents = [
                 getattr(self.ui, "action_recent_" + str(x))
-                for x in range(self.parent().prefs.MAX_RECENT_COUNT)
+                for x in range(self.__parent.prefs.MAX_RECENT_COUNT)
             ]
             for action in self.recents:
-                action.triggered.connect(self.load_recent)
+                action.triggered.connect(self.loadRecent)
 
         # Set up recent files menus
         self.showRecents()
@@ -82,8 +83,8 @@ class Menu(QMenuBar):
         # Get file names from recents list
         # and make items visible if there are files available.
         i = 0
-        while i < self.parent().prefs.MAX_RECENT_COUNT and i < len(self.parent().prefs.recentFiles):
-            self.recents[i].setText(self.parent().prefs.recentFiles[i])
+        while i < self.__parent.prefs.MAX_RECENT_COUNT and i < len(self.__parent.prefs.recentFiles):
+            self.recents[i].setText(self.__parent.prefs.recentFiles[i])
             self.recents[i].setVisible(True)
             i += 1
 
@@ -93,10 +94,10 @@ class Menu(QMenuBar):
 
     # Function is a recent menu click handler
     # Load image from file
-    def load_recent(self, _) -> None:
+    def loadRecent(self, _: QAction) -> None:
         """Recent menu action click handler"""
-        filename = self.sender().text()
-        self.parent().scene.ayabimage.load(filename)
+        filename = cast(QAction, self.sender()).text()
+        self.__parent.scene.ayabimage.load(filename)
 
     def depopulate(self) -> None:
         try:
