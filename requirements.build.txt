@@ -1,5 +1,5 @@
 setuptools==75.8.0
-fbs @ git+https://github.com/dmitrys99/fbs@1.2.1-pyqt6-solo
+fbs @ git+https://github.com/dmitrys99/fbs@ayab-fork
 PySide6==6.6.2
 PyInstaller==6.21.0
 Pillow==10
